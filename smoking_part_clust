@@ -1,0 +1,54 @@
+# Read the data from the CSV file
+data <- read.csv("smoking.csv")
+
+# Filter out rows with "Unknown" and "Refused" in gross_income
+data <- data[!(data$gross_income %in% c("Unknown", "Refused")), ]
+
+# Select relevant columns
+selected_columns <- data[, c("gender", "age", "marital_status", "gross_income", "smoke")]
+
+# Remove rows with any missing values
+selected_columns <- na.omit(selected_columns)
+
+# Convert "gross_income" to numeric format
+selected_columns$gross_income <- as.numeric(gsub("[^0-9]+", "", selected_columns$gross_income))
+
+# Replace NA values in "gross_income" with the median
+median_income <- median(selected_columns$gross_income, na.rm = TRUE)
+selected_columns$gross_income[is.na(selected_columns$gross_income)] <- median_income
+
+# Convert "smoke" to a binary format
+selected_columns$smoke <- ifelse(selected_columns$smoke == "Yes", 1, 0)
+
+# Convert "gender" and "marital_status" to factors
+selected_columns$gender <- as.factor(selected_columns$gender)
+selected_columns$marital_status <- as.factor(selected_columns$marital_status)
+
+# Standardize numeric columns
+selected_columns[, c("age", "gross_income")] <- scale(selected_columns[, c("age", "gross_income")])
+
+# K-means clustering
+k <- 3  # You can change the number of clusters as needed
+set.seed(123)  # For reproducibility
+kmeans_result <- kmeans(selected_columns[, c("age", "gross_income", "smoke")], centers = k)
+
+# Add cluster labels to the original data
+data$cluster <- as.factor(kmeans_result$cluster)
+
+# Reorder levels of gross_income following the new specified order
+income_order <- c("under 2,600", "2,600 to 5,200", "5,200 to 10,400", "10,400 to 15,600", "15,600 to 20,800", "20,800 to 28,600", "28,600 to 36,400", "above 36,400")
+data$gross_income <- factor(data$gross_income, levels = income_order)
+
+# Remove NA values
+data <- na.omit(data)
+
+# Plot the clusters
+library(ggplot2)
+
+ggplot(data, aes(x = age, y = gross_income, color = cluster)) +
+  geom_point() +
+  labs(title = "K-Means Clustering of Individuals",
+       x = "Age",
+       y = "Gross Income",
+       color = "Cluster") +
+  theme_minimal()
