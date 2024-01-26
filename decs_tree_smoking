@@ -1,0 +1,28 @@
+# Load necessary library
+library(rpart)
+library(rpart.plot)
+
+# Load the dataset from a CSV file
+dataset <- read.csv("smoking.csv")
+
+# Prepare the data by removing irrelevant columns, filling in missing values, and converting categorical variables to dummy/indicator variables
+dataset <- dataset[, c("age", "highest_qualification", "marital_status", "ethnicity", "gross_income", "amt_weekends", "amt_weekdays", "smoke")]
+dataset$age <- as.numeric(dataset$age)
+dataset$gross_income <- as.numeric(gsub("[^0-9]", "", dataset$gross_income))
+dataset$smoke <- factor(dataset$smoke, levels = c("Yes", "No"))
+dataset$ethnicity <- factor(dataset$ethnicity)
+dataset$highest_qualification <- factor(dataset$highest_qualification)
+dataset$marital_status <- factor(dataset$marital_status)
+
+# Build the decision tree using the rpart function without splitting the data
+tree <- rpart(smoke ~ ., data = dataset, method = "class")
+
+# Plot the decision tree using the rpart.plot function
+rpart.plot(tree, box.palette="GnBu", shadow.col="gray90", nn=TRUE)
+
+# Use the predict function to classify the smokers and non-smokers in the dataset
+predictions <- predict(tree, newdata = dataset, type = "class")
+
+# Assess the accuracy of the decision tree using the confusionMatrix function from the caret package
+library(caret)
+confusionMatrix(predictions, dataset$smoke)
