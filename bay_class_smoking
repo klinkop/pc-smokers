@@ -1,13 +1,13 @@
-> library(readr)
-> library(e1071)
-> library(caret)
-> smoking <- read_csv("smoking.csv")
-> split_index <- createDataPartition(smoking$smoke, p = 0.7, list = FALSE)
-> train_data <- smoking[split_index, ]
-> test_data <- smoking[-split_index, ]
-> naive_bayes_model <- naiveBayes(smoke ~ ., data = train_data)
-> predictions <- predict(naive_bayes_model, test_data)
-> conf_matrix <- table(predictions, test_data$smoke)
-> accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
-> print(conf_matrix)
-> cat("Accuracy:", accuracy, "\n")
+library(readr)
+ library(e1071)
+ library(caret)
+ smoking <- read_csv("smoking.csv")
+ split_index <- createDataPartition(smoking$smoke, p = 0.7, list = FALSE)
+ train_data <- smoking[split_index, ]
+ test_data <- smoking[-split_index, ]
+ naive_bayes_model <- naiveBayes(smoke ~ ., data = train_data)
+ predictions <- predict(naive_bayes_model, test_data)
+ conf_matrix <- table(predictions, test_data$smoke)
+ accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+ print(conf_matrix)
+ cat("Accuracy:", accuracy, "\n")
